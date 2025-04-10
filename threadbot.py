@@ -7,20 +7,19 @@ from dotenv import load_dotenv
 load_dotenv()
 
 TOKEN = os.getenv("DISCORD_TOKEN")
-CHANNEL_ID = int(os.getenv("CHANNEL_ID"))
-LOG_CHANNEL_ID = int(os.getenv("LOG_CHANNEL_ID"))
+CHANNEL_ID = int(os.getenv("CHANNEL_ID", 0))
+LOG_CHANNEL_ID = int(os.getenv("LOG_CHANNEL_ID", 0))
 
 intents = discord.Intents.default()
 intents.messages = True
 intents.guilds = True
 intents.message_content = True
+intents.members = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
 
 log_channel = None
-
 MAZE_IMAGE_URL = "https://cdn.discordapp.com/attachments/1359069286060261447/1359098672260059337/maze.jpg"
-
 AUTHORIZED_USER_IDS = [779853330830458901]
 
 def is_authorized(ctx):
@@ -32,6 +31,8 @@ class ThreadButton(Button):
 
     async def callback(self, interaction: discord.Interaction):
         global log_channel
+        await interaction.response.defer(ephemeral=True)
+
         try:
             thread = await interaction.channel.create_thread(
                 name=f"{interaction.user.name}'s Thread",
@@ -54,8 +55,7 @@ class ThreadButton(Button):
             )
 
             await thread.send(MAZE_IMAGE_URL)
-
-            await interaction.response.send_message(f"✅ Created private thread: {thread.mention}", ephemeral=True)
+            await interaction.followup.send(f"✅ Created private thread: {thread.mention}", ephemeral=True)
 
             print(f"📌 {interaction.user} created a private thread: {thread.name} ({thread.id})")
             if log_channel:
@@ -64,7 +64,7 @@ class ThreadButton(Button):
         except Exception as e:
             print(f"Error: {e}")
             try:
-                await interaction.response.send_message("❌ Could not create thread.", ephemeral=True)
+                await interaction.followup.send("❌ Could not create thread.", ephemeral=True)
             except:
                 pass
             if log_channel:
@@ -79,13 +79,12 @@ async def on_ready():
     log_channel = bot.get_channel(LOG_CHANNEL_ID)
 
     panel_text = (
-        "# Hey hey, MOBA fam~! <a:hi:1113066390480486492> <a:hi:1113066390480486492> \n"
-        "<:DPandaFlowerHead:995283300576931851> Ready to join the <a:an_angela_flowerbloom:1356626214202380439> "
-        "*_Spring Blossom Escape_* <a:an_angela_flowerbloom:1356626214202380439> adventure?  \n"
-        "But before we get started, pretty pleaseeeeeeeeeee <a:nyaPlease:571243415631560713> make sure you’ve read and understood "
-        "all the important info in the <#1301805733708435558> channel, okay? <a:BPandaOkay:993596849778851860> \n"
-        "-# I'll be reallyyyyy upset if you get disqualified <a:8ACOSP_kittencry:755942090193633308> \n\n"
-        "<a:nyaYay:649465448424800287> Once you're all set, just click the button below and a special little thread will bloom just for you!"
+        "# Hey hey, MOBA fam~! \n"
+        "Ready to join the *_Spring Blossom Escape_* adventure?  \n"
+        "But before we get started, pretty pleaseeeeeeeeeee! make sure you’ve read and understood all the important info in the "
+        "<https://discord.com/channels/1265321309508993064/1301805733708435558/1359799779739177132> channel, okay? \n"
+        "-# I'll be reallyyyyy upset if you get disqualified 😿\n\n"
+        "Once you're all set, just click the button below and a special little thread will bloom just for you!"
     )
 
     if channel:
@@ -125,13 +124,12 @@ async def sendpanel(ctx, channel: discord.TextChannel):
         return await ctx.send("❌ You don’t have permission to use this command.", delete_after=5)
 
     panel_text = (
-        "# Hey hey, MOBA fam~! <a:hi:1113066390480486492> <a:hi:1113066390480486492> \n"
-        "<:DPandaFlowerHead:995283300576931851> Ready to join the <a:an_angela_flowerbloom:1356626214202380439> "
-        "*_Spring Blossom Escape_* <a:an_angela_flowerbloom:1356626214202380439> adventure?  \n"
-        "But before we get started, pretty pleaseeeeeeeeeee <a:nyaPlease:571243415631560713> make sure you’ve read and understood "
-        "all the important info in the <#1301805733708435558> channel, okay? <a:BPandaOkay:993596849778851860> \n"
-        "-# I'll be reallyyyyy upset if you get disqualified <a:8ACOSP_kittencry:755942090193633308> \n\n"
-        "<a:nyaYay:649465448424800287> Once you're all set, just click the button below and a special little thread will bloom just for you!"
+        "# Hey hey, MOBA fam~! \n"
+        "Ready to join the *_Spring Blossom Escape_* adventure?  \n"
+        "But before we get started, pretty pleaseeeeeeeeeee! make sure you’ve read and understood all the important info in the "
+        "<https://discord.com/channels/1265321309508993064/1301805733708435558/1359799779739177132> channel, okay? \n"
+        "-# I'll be reallyyyyy upset if you get disqualified 😿\n\n"
+        "Once you're all set, just click the button below and a special little thread will bloom just for you!"
     )
 
     view = View()
@@ -144,6 +142,7 @@ async def ping(ctx):
     await ctx.send("pong!")
 
 bot.run(TOKEN)
+
 
 
 
