@@ -31,14 +31,16 @@ class ThreadButton(Button):
 
     async def callback(self, interaction: discord.Interaction):
         global log_channel
-        await interaction.response.defer(ephemeral=True)
 
         try:
+            await interaction.response.defer(ephemeral=True)  # Prevents "interaction failed"
+
             thread = await interaction.channel.create_thread(
                 name=f"{interaction.user.name}'s Thread",
                 type=discord.ChannelType.private_thread,
                 auto_archive_duration=60
             )
+
             await thread.add_user(interaction.user)
 
             await thread.send(
@@ -61,10 +63,15 @@ class ThreadButton(Button):
             if log_channel:
                 await log_channel.send(f"📌 {interaction.user.mention} created a private thread: {thread.mention}")
 
+        except discord.Forbidden:
+            await interaction.followup.send("❌ I don't have permission to create a thread or add you.", ephemeral=True)
+            if log_channel:
+                await log_channel.send(f"⚠️ Permission error when {interaction.user.mention} tried to create a thread.")
+
         except Exception as e:
             print(f"Error: {e}")
             try:
-                await interaction.followup.send("❌ Could not create thread.", ephemeral=True)
+                await interaction.followup.send("❌ Something went wrong creating the thread.", ephemeral=True)
             except:
                 pass
             if log_channel:
@@ -142,6 +149,7 @@ async def ping(ctx):
     await ctx.send("pong!")
 
 bot.run(TOKEN)
+
 
 
 
