@@ -27,7 +27,7 @@ def is_authorized(ctx):
 
 class ThreadButton(Button):
     def __init__(self):
-        super().__init__(label="Create Private Thread", style=discord.ButtonStyle.primary)
+        super().__init__(label="Create Private Thread", style=discord.ButtonStyle.primary, custom_id="create_thread_button")
 
     async def callback(self, interaction: discord.Interaction):
         global log_channel
@@ -77,13 +77,17 @@ class ThreadButton(Button):
             if log_channel:
                 await log_channel.send(f"❌ Failed to create thread for {interaction.user.mention}: `{e}`")
 
+class ThreadButtonView(View):
+    def __init__(self):
+        super().__init__(timeout=None)  # Makes it persistent
+        self.add_item(ThreadButton())
+
 @bot.event
 async def on_ready():
     global log_channel
     print(f"✅ Logged in as {bot.user}")
 
-    # 👇 Persist button view so it keeps working after restart
-    bot.add_view(View().add_item(ThreadButton()))
+    bot.add_view(ThreadButtonView())  # 👈 Register the persistent view
 
     channel = bot.get_channel(CHANNEL_ID)
     log_channel = bot.get_channel(LOG_CHANNEL_ID)
@@ -98,9 +102,7 @@ async def on_ready():
     )
 
     if channel:
-        view = View()
-        view.add_item(ThreadButton())
-        await channel.send(panel_text, view=view)
+        await channel.send(panel_text, view=ThreadButtonView())
     else:
         print("❌ Could not find the main panel channel.")
 
@@ -142,9 +144,7 @@ async def sendpanel(ctx, channel: discord.TextChannel):
         "Once you're all set, just click the button below and a special little thread will bloom just for you!"
     )
 
-    view = View()
-    view.add_item(ThreadButton())
-    await channel.send(panel_text, view=view)
+    await channel.send(panel_text, view=ThreadButtonView())
     await ctx.send(f"✅ Panel sent to {channel.mention}", delete_after=5)
 
 @bot.command()
@@ -152,6 +152,7 @@ async def ping(ctx):
     await ctx.send("pong!")
 
 bot.run(TOKEN)
+
 
 
 
