@@ -82,6 +82,9 @@ async def on_ready():
     global log_channel
     print(f"✅ Logged in as {bot.user}")
 
+    # 👇 Persist button view so it keeps working after restart
+    bot.add_view(View().add_item(ThreadButton()))
+
     channel = bot.get_channel(CHANNEL_ID)
     log_channel = bot.get_channel(LOG_CHANNEL_ID)
 
@@ -149,6 +152,7 @@ async def ping(ctx):
     await ctx.send("pong!")
 
 bot.run(TOKEN)
+
 
 
 
