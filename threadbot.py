@@ -33,7 +33,7 @@ class ThreadButton(Button):
         global log_channel
 
         try:
-            await interaction.response.defer(ephemeral=True)  # Prevents "interaction failed"
+            await interaction.response.defer(thinking=True, ephemeral=True)
 
             thread = await interaction.channel.create_thread(
                 name=f"{interaction.user.name}'s Thread",
@@ -79,7 +79,7 @@ class ThreadButton(Button):
 
 class ThreadButtonView(View):
     def __init__(self):
-        super().__init__(timeout=None)  # Makes it persistent
+        super().__init__(timeout=None)
         self.add_item(ThreadButton())
 
 @bot.event
@@ -87,7 +87,7 @@ async def on_ready():
     global log_channel
     print(f"✅ Logged in as {bot.user}")
 
-    bot.add_view(ThreadButtonView())  # 👈 Register the persistent view
+    bot.add_view(ThreadButtonView())
 
     channel = bot.get_channel(CHANNEL_ID)
     log_channel = bot.get_channel(LOG_CHANNEL_ID)
@@ -152,6 +152,8 @@ async def ping(ctx):
     await ctx.send("pong!")
 
 bot.run(TOKEN)
+
+
 
 
 
